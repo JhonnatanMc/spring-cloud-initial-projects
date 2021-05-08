@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -14,6 +15,8 @@ import co.edu.eafit.bank.domain.Transaction;
 import co.edu.eafit.bank.domain.TransactionType;
 import co.edu.eafit.bank.domain.Users;
 import co.edu.eafit.bank.dto.DepositDTO;
+import co.edu.eafit.bank.dto.OTPValidationRequest;
+import co.edu.eafit.bank.dto.OTPValidationResponse;
 import co.edu.eafit.bank.dto.TransactionResultDTO;
 import co.edu.eafit.bank.dto.TransferDTO;
 import co.edu.eafit.bank.dto.WithdrawDTO;
@@ -22,6 +25,8 @@ import co.edu.eafit.bank.entityservice.TransactionService;
 import co.edu.eafit.bank.entityservice.TransactionTypeService;
 import co.edu.eafit.bank.entityservice.UsersService;
 import co.edu.eafit.bank.exception.ZMessManager;
+import co.edu.eafit.bank.openfeignClients.OTPServiceClient;
+import reactor.core.publisher.Mono;
 
 
 @Service
@@ -41,6 +46,9 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 
 	@Autowired
 	TransactionService transactionService;
+	
+	@Autowired
+	OTPServiceClient otpServiceClient;
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -77,8 +85,18 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 		if (!userOptional.isPresent()) {
 			throw (new ZMessManager()).new FindingException("Usuario con id " + transferDTO.getUserEmail());
 		}
+		
 
 		Users user = userOptional.get();
+		
+		// OTP Validation
+		validateToken(user.getToken(), transferDTO.getToken());
+		
+		OTPValidationResponse oTPValidationResponse = validateToken(user.getToken(), transferDTO.getToken());
+		
+		if (oTPValidationResponse == null || !oTPValidationResponse.getValid()) {
+			throw new Exception("No es un OTP valido");
+		}
 
 		Transaction transaction = new Transaction();
 		transaction.setAccount(account);
@@ -93,6 +111,13 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 		return new TransactionResultDTO(transaction.getTranId(), withdrawResult.getBalance());
 
 	}
+	
+	//Método que se encarga de validar el Token TOTP
+		private OTPValidationResponse validateToken(String user, String otp) {
+		
+			OTPValidationRequest otpValidationRequest = new OTPValidationRequest(user, otp);
+			return otpServiceClient.validateOTP(otpValidationRequest);
+		}
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
