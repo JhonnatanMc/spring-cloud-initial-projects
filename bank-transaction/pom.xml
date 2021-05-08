@@ -105,6 +105,12 @@
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-starter-openfeign</artifactId>
 	</dependency>
+	
+	<!-- Client-side load Balancer -->
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-loadbalancer</artifactId>
+</dependency>
 		
 		
 	</dependencies>

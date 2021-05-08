@@ -90,9 +90,8 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 		Users user = userOptional.get();
 		
 		// OTP Validation
-		validateToken(user.getToken(), transferDTO.getToken());
 		
-		OTPValidationResponse oTPValidationResponse = validateToken(user.getToken(), transferDTO.getToken());
+		OTPValidationResponse oTPValidationResponse = validateToken(user.getUserEmail(), transferDTO.getToken());
 		
 		if (oTPValidationResponse == null || !oTPValidationResponse.getValid()) {
 			throw new Exception("No es un OTP valido");
