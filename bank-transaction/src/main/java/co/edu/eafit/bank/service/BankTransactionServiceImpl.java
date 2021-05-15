@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import co.edu.eafit.bank.domain.Account;
 import co.edu.eafit.bank.domain.Transaction;
 import co.edu.eafit.bank.domain.TransactionType;
@@ -26,9 +27,11 @@ import co.edu.eafit.bank.entityservice.TransactionTypeService;
 import co.edu.eafit.bank.entityservice.UsersService;
 import co.edu.eafit.bank.exception.ZMessManager;
 import co.edu.eafit.bank.openfeignClients.FeignClients;
+//import co.edu.eafit.controller.OTPController;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-
+@Slf4j
 @Service
 @Scope("singleton")
 public class BankTransactionServiceImpl implements BankTransactionService {
@@ -60,6 +63,8 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 		WithdrawDTO withdrawDTO = new WithdrawDTO(transferDTO.getAccoIdOrigin(), transferDTO.getAmount(),
 				transferDTO.getUserEmail());
 		withdraw(withdrawDTO);
+		
+		log.info("Realizando una transferencia desde... hasta... por un valor de..");
 
 		DepositDTO depositDTO = new DepositDTO(transferDTO.getAccoIdDestination(), transferDTO.getAmount(),
 				transferDTO.getUserEmail());
@@ -76,12 +81,15 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 			throw (new ZMessManager()).new FindingException("tipo de transacción 3");
 		}
 		TransactionType transactionType = transactionType3.get();
+		
+		log.info("Consultando la cuenta de origen");
 
 		Optional<Account> accountOptional = accountService.findById(transferDTO.getAccoIdOrigin());
 		if (!accountOptional.isPresent()) {
 			throw (new ZMessManager()).new FindingException("cuenta con id " + transferDTO.getAccoIdOrigin());
 		}
 
+	
 		Account account = accountOptional.get();
 
 		Optional<Users> userOptional = userService.findById(transferDTO.getUserEmail());

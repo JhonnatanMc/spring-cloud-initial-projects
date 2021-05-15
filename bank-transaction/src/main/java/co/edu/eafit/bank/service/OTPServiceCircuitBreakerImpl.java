@@ -21,7 +21,8 @@ public class OTPServiceCircuitBreakerImpl implements OTPServiceCircuitBreaker {
 	@Override
 	public OTPValidationResponse validateToken(String user, String otp) throws Exception {
 		OTPValidationRequest otpValidationRequest = new OTPValidationRequest(user, otp);
-		return feignClients.validateOTP(otpValidationRequest);
+		OTPValidationResponse response = feignClients.validateOTP(otpValidationRequest);
+		return response;
 	}
 
 	public OTPValidationResponse fallbackValidateToken(String user, String otp, Throwable e) throws Exception {
