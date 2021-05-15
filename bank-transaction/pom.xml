@@ -107,10 +107,29 @@
 	</dependency>
 	
 	<!-- Client-side load Balancer -->
+	<!--
 <dependency>
 	<groupId>org.springframework.cloud</groupId>
 	<artifactId>spring-cloud-starter-loadbalancer</artifactId>
-</dependency>
+</dependency> -->
+
+<!-- Circuit breaker -->
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-spring-boot2</artifactId>
+		</dependency>
+		
+		<!-- Programación orientada a aspectos -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+				
+		<!-- Actuator -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 		
 		
 	</dependencies>
@@ -133,6 +152,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-resources-plugin</artifactId>
+			    <version>2.7</version>
+			  <dependencies>
+			    <dependency>
+			        <groupId>org.apache.maven.shared</groupId>
+			        <artifactId>maven-filtering</artifactId>
+			        <version>1.3</version>
+			    </dependency>
+			  </dependencies>
 			</plugin>
 			
 			<plugin>

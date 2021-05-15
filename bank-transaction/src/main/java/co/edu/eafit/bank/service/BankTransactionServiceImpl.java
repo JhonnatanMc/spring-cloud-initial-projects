@@ -25,7 +25,7 @@ import co.edu.eafit.bank.entityservice.TransactionService;
 import co.edu.eafit.bank.entityservice.TransactionTypeService;
 import co.edu.eafit.bank.entityservice.UsersService;
 import co.edu.eafit.bank.exception.ZMessManager;
-import co.edu.eafit.bank.openfeignClients.OTPServiceClient;
+import co.edu.eafit.bank.openfeignClients.FeignClients;
 import reactor.core.publisher.Mono;
 
 
@@ -48,7 +48,10 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 	TransactionService transactionService;
 	
 	@Autowired
-	OTPServiceClient otpServiceClient;
+	FeignClients feignClients;
+	
+	@Autowired
+	OTPServiceCircuitBreaker otpServiceCircuitBreaker;
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -90,8 +93,9 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 		Users user = userOptional.get();
 		
 		// OTP Validation
+		OTPValidationResponse oTPValidationResponse = otpServiceCircuitBreaker.validateToken(user.getUserEmail(), transferDTO.getToken());
 		
-		OTPValidationResponse oTPValidationResponse = validateToken(user.getUserEmail(), transferDTO.getToken());
+		//OTPValidationResponse oTPValidationResponse = validateToken(user.getUserEmail(), transferDTO.getToken());
 		
 		if (oTPValidationResponse == null || !oTPValidationResponse.getValid()) {
 			throw new Exception("No es un OTP valido");
@@ -112,11 +116,11 @@ public class BankTransactionServiceImpl implements BankTransactionService {
 	}
 	
 	//Método que se encarga de validar el Token TOTP
-		private OTPValidationResponse validateToken(String user, String otp) {
+		/*private OTPValidationResponse validateToken(String user, String otp) {
 		
 			OTPValidationRequest otpValidationRequest = new OTPValidationRequest(user, otp);
-			return otpServiceClient.validateOTP(otpValidationRequest);
-		}
+			return feignClients.validateOTP(otpValidationRequest);
+		}*/
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
